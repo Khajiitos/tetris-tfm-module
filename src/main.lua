@@ -1,0 +1,13 @@
+tfm.exec.disableAfkDeath(true)
+tfm.exec.disableAutoNewGame(true)
+tfm.exec.disableAutoScore(true)
+tfm.exec.disableAutoShaman(true)
+tfm.exec.disableAutoTimeLeft(true)
+tfm.exec.disablePhysicalConsumables(true)
+tfm.exec.newGame(MAP)
+tfm.exec.setGameTime(0, true)
+ui.setMapName("Tetris TFM");
+
+for playerName in pairs(tfm.get.room.playerList) do
+    eventNewPlayer(playerName)
+end
