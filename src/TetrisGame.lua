@@ -199,6 +199,14 @@ function TetrisGame:installCurrentPiece()
     end
 end
 
+function TetrisGame:hardDrop()
+    while not self:currentPieceTouchesAnything() do
+        self.currentPieceY = self.currentPieceY + 1
+    end
+    self.currentPieceY = self.currentPieceY - 1
+    self:installCurrentPiece()
+end
+
 function TetrisGame:placeBlock(x, y, color)
     local boardIndex = self:boardIndex(x, y)
     self.board[boardIndex] = color
@@ -250,6 +258,8 @@ function TetrisGame:onKeyPress(keyCode)
         end
     elseif keyCode == enum.key.DOWN then
         self.currentPieceY = self.currentPieceY + 1
+    elseif keyCode == enum.key.SPACE then
+        self:hardDrop()
     end
 
     self:undrawCurrentPiece()
