@@ -6,6 +6,9 @@ TetrisGame = {
     currentPieceX = 4,
     currentPieceY = 1,
 
+    score = 0,
+    lines = 0,
+
     npTextAreaWidth = 0,
     npTextAreaHeight = 0,
     bgTextAreaWidth = 0,
@@ -49,15 +52,30 @@ function TetrisGame:startGame()
 
     ui.addTextArea(enum.textArea.BACKGROUND_NEXT_PIECE, '', self.playerName, self.npxPosition, self.npyPosition, self.npTextAreaWidth, self.npTextAreaHeight, 0x101010, 0x010101, 1.0, true)
     ui.addTextArea(enum.textArea.NEXT_PIECE_TEXT, '<p align="center"><font size="20" color="#FFFFFF" face="serif">NEXT</font></p>', self.playerName, self.npxPosition, self.npyPosition, self.npTextAreaWidth, 50, 0, 0, 0, true)
+    
+    ui.addTextArea(enum.textArea.GAME_INFO, '', self.playerName, self.bgxPosition - self.npTextAreaWidth - 15, self.npyPosition, self.npTextAreaWidth, self.npTextAreaHeight, 0x101010, 0x010101, 1.0, true)
+
+    self:updateGameInfoTextArea()
     self:updateNextPiecePreview()
     self:drawCurrentPiece()
 
     tfm.exec.freezePlayer(self.playerName, true, false)
 end
 
+function TetrisGame:updateGameInfoTextArea()
+    local text = string.format([[
+<textformat leading="4"><p align="center"><font size="20" color="#FFFFFF" face="serif">SCORE</font>
+<font size="16" color="#AAAAAA">%d</font><br>
+<font size="20" color="#FFFFFF" face="serif">LINES</font>
+<font size="16" color="#AAAAAA">%d</font></p></textformat>
+]], self.score, self.lines)
+
+    ui.updateTextArea(enum.textArea.GAME_INFO, text, self.playerName)
+end
+
 function TetrisGame:drawCurrentPiece()
     local startX = self.bgxPosition + ((self.currentPieceX - 1) * ACTUAL_BLOCK_SIZE)
-    local startY = self.bgyPosition + ((self.currentPieceY - 1) * ACTUAL_BLOCK_SIZE)
+    local startY = self.bgyPosition + ((self.currentPieceY - 2) * ACTUAL_BLOCK_SIZE)
 
     local blocks = self.currentPiece:getBlocks()
 
@@ -111,6 +129,7 @@ function TetrisGame:endGame()
     ui.removeTextArea(enum.textArea.GAME_BACKGROUND, self.playerName)
     ui.removeTextArea(enum.textArea.BACKGROUND_NEXT_PIECE, self.playerName)
     ui.removeTextArea(enum.textArea.NEXT_PIECE_TEXT, self.playerName)
+    ui.removeTextArea(enum.textArea.GAME_INFO, self.playerName)
 
     for _, id in ipairs(self.currentPieceBlockTextAreasIds) do
         ui.removeTextArea(id, self.playerName)
@@ -123,6 +142,8 @@ function TetrisGame:endGame()
     for i = enum.textArea.GAME_BLOCK_START, enum.textArea.GAME_BLOCK_START + GAME_HEIGHT * GAME_WIDTH do
         ui.removeTextArea(i, self.playerName)
     end
+
+    self:playSound('deadmaze/combat/soins.mp3')
 
     playerData[self.playerName].game = nil
     tfm.exec.freezePlayer(self.playerName, false)
@@ -158,6 +179,10 @@ function TetrisGame:checkRow(y)
         end 
     end
 
+    self.lines = self.lines + 1
+    self:updateGameInfoTextArea()
+    self:playSound('tfmadv/buff1.mp3')
+
     for i = 1, 10 do
         self:placeBlock(i, y, nil)
     end
@@ -177,6 +202,7 @@ end
 
 function TetrisGame:installCurrentPiece()
     self:undrawCurrentPiece()
+    local currentLines = self.lines
     local blocks = self.currentPiece:getBlocks()
     for i, row in ipairs(blocks) do
         for j, block in ipairs(row) do
@@ -186,12 +212,25 @@ function TetrisGame:installCurrentPiece()
             self:checkRow(blockY)
         end
     end
+    local linesDif = self.lines - currentLines
+
+    if linesDif == 1 then
+        self:addScore(100)
+    elseif linesDif == 2 then
+        self:addScore(300)
+    elseif linesDif == 3 then
+        self:addScore(500)
+    elseif linesDif == 4 then
+        self:addScore(800)
+    end
+
     self.currentPieceY = 1
     self.currentPieceX = 4
     self.currentPiece = self.nextPiece
     self.nextPiece = piece_prototypes[math.random(#piece_prototypes)]:copy()
     self:updateNextPiecePreview()
     self:drawCurrentPiece()
+    self:playSound('tfmadv/bouton1.mp3')
 
     if self:currentPieceTouchesAnything() then
         self:endGame()
@@ -207,6 +246,9 @@ function TetrisGame:hardDrop()
 end
 
 function TetrisGame:placeBlock(x, y, color)
+    if y < 1 then
+        return
+    end
     local boardIndex = self:boardIndex(x, y)
     self.board[boardIndex] = color
     if color then
@@ -248,6 +290,7 @@ function TetrisGame:onKeyPress(keyCode)
             self.currentPiece:rotateBackwards()
             return
         end
+        self:playSound('transformice/son/dash.mp3')
     elseif keyCode == enum.key.RIGHT then
         self.currentPieceX = self.currentPieceX + 1
         if self:currentPieceTouchesAnything() then
@@ -276,4 +319,13 @@ function TetrisGame:printBoard()
         end
         print(rowStr)
     end
+end
+
+function TetrisGame:addScore(score)
+    self.score = self.score + score
+    self:updateGameInfoTextArea()
+end
+
+function TetrisGame:playSound(sound)
+    tfm.exec.playSound(sound, nil, nil, nil, self.playerName)
 end

@@ -13,6 +13,8 @@ enum = {
         GAME_BACKGROUND = 3,
         BACKGROUND_NEXT_PIECE = 4,
         NEXT_PIECE_TEXT = 5,
+        GAME_INFO = 6,
+        TETRIS_LOGO = 7,
 
         NEXT_PIECE_BLOCK_START = 50,
         CURRENT_PIECE_BLOCK_START = 100,
