@@ -14,7 +14,17 @@ function Piece:new(color, pieceBlocks)
 end
 
 function Piece:rotate()
+    self.rotationPhase = self.rotationPhase + 1
+    if self.rotationPhase >= 5 then
+        self.rotationPhase = 1
+    end
+end
 
+function Piece:rotateBackwards()
+    self.rotationPhase = self.rotationPhase - 1
+    if self.rotationPhase <= 0 then
+        self.rotationPhase = 4
+    end
 end
 
 function Piece:copy()
