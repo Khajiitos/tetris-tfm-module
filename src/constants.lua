@@ -15,6 +15,10 @@ enum = {
         NEXT_PIECE_TEXT = 5,
         GAME_INFO = 6,
         TETRIS_LOGO = 7,
+        FULLSCREEN_BACKGROUND = 8,
+        PAUSE = 9,
+        PAUSE_RESUME_BUTTON = 10,
+        UNPAUSE_TIMER = 11,
 
         NEXT_PIECE_BLOCK_START = 50,
         CURRENT_PIECE_BLOCK_START = 100,
@@ -25,6 +29,7 @@ enum = {
         UP = 1,
         RIGHT = 2,
         DOWN = 3,
-        SPACE = 32
+        SPACE = 32,
+        ESC = 27
     }
 }

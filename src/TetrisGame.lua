@@ -18,6 +18,9 @@ TetrisGame = {
     bgxPosition = 0,
     bgyPosition = 0,
 
+    paused = false,
+    unpauseTimer = 3.0,
+
     currentPieceBlockTextAreasIds = {},
     nextPieceBlockTextAreasIds = {}
 }
@@ -52,8 +55,9 @@ function TetrisGame:startGame()
 
     ui.addTextArea(enum.textArea.BACKGROUND_NEXT_PIECE, '', self.playerName, self.npxPosition, self.npyPosition, self.npTextAreaWidth, self.npTextAreaHeight, 0x101010, 0x010101, 1.0, true)
     ui.addTextArea(enum.textArea.NEXT_PIECE_TEXT, '<p align="center"><font size="20" color="#FFFFFF" face="serif">NEXT</font></p>', self.playerName, self.npxPosition, self.npyPosition, self.npTextAreaWidth, 50, 0, 0, 0, true)
-    
     ui.addTextArea(enum.textArea.GAME_INFO, '', self.playerName, self.bgxPosition - self.npTextAreaWidth - 15, self.npyPosition, self.npTextAreaWidth, self.npTextAreaHeight, 0x101010, 0x010101, 1.0, true)
+    self:addUnpauseTimer()
+    self:updateUnpauseTimer()
 
     self:updateGameInfoTextArea()
     self:updateNextPiecePreview()
@@ -260,6 +264,19 @@ function TetrisGame:placeBlock(x, y, color)
 end
 
 function TetrisGame:onEventLoop()
+    if self.paused then
+        return
+    end
+    if self.unpauseTimer > 0 then
+        self.unpauseTimer = self.unpauseTimer - 0.5
+        if self.unpauseTimer > 0 then
+            self:updateUnpauseTimer()
+            return
+        else
+            self.unpauseTimer = 0
+            ui.removeTextArea(enum.textArea.UNPAUSE_TIMER, self.playerName)
+        end
+    end
     self:undrawCurrentPiece()
     self.currentPieceY = self.currentPieceY + 1
     self:checkCurrentPiece()
@@ -278,6 +295,13 @@ function TetrisGame:position(x, y)
 end
 
 function TetrisGame:onKeyPress(keyCode)
+    if keyCode == enum.key.ESC then
+        self:togglePause()
+        return
+    end
+    if self.paused or self.unpauseTimer > 0 then
+        return
+    end
     if keyCode == enum.key.LEFT then
         self.currentPieceX = self.currentPieceX - 1
         if self:currentPieceTouchesAnything() then
@@ -307,6 +331,14 @@ function TetrisGame:onKeyPress(keyCode)
     self:checkCurrentPiece()
 end
 
+function TetrisGame:addUnpauseTimer()
+    ui.addTextArea(enum.textArea.UNPAUSE_TIMER, '', self.playerName, 250, 150, 300, 100, 0, 0, 0, true)
+end
+
+function TetrisGame:updateUnpauseTimer()
+    ui.updateTextArea(enum.textArea.UNPAUSE_TIMER, string.format('<p align="center"><font size="50" color="#FFFFFF" face="serif"><b>%d</b></font></p>', math.ceil(self.unpauseTimer)), self.playerName)
+end
+
 function TetrisGame:printBoard()
     for i = 1, GAME_HEIGHT do
         local rowStr = ''
@@ -318,6 +350,22 @@ function TetrisGame:printBoard()
             end
         end
         print(rowStr)
+    end
+end
+
+function TetrisGame:togglePause()
+    self.paused = not self.paused
+    if self.paused then
+        ui.addTextArea(enum.textArea.FULLSCREEN_BACKGROUND, '', self.playerName, 0, 0, 800, 400, 0x010101, 0x010101, 0.5, true)
+        ui.addTextArea(enum.textArea.PAUSE, '<p align="center"><font color="#FFFFFF" size="24">Paused</font></p>', self.playerName, 300, 150, 200, 100, 0x0A0A0A, 0xAAAAAA, 1.0, true)
+        ui.addTextArea(enum.textArea.PAUSE_RESUME_BUTTON, '<a href="event:unpause"><p align="center"><font color="#FFFFFF" size="18">Resume</p></a>', self.playerName, 325, 215, 150, 25, 0x00FF00, 0x00AA00, 1.0, true)
+    else
+        ui.removeTextArea(enum.textArea.FULLSCREEN_BACKGROUND, self.playerName)
+        ui.removeTextArea(enum.textArea.PAUSE, self.playerName)
+        ui.removeTextArea(enum.textArea.PAUSE_RESUME_BUTTON, self.playerName)
+        self.unpauseTimer = 3.0
+        self:addUnpauseTimer()
+        self:updateUnpauseTimer()
     end
 end
 

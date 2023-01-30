@@ -6,5 +6,7 @@ function eventTextAreaCallback(textAreaID, playerName, callback)
         playerData[playerName].game = game
         game:startGame()
         removeStartGameButton(playerName)
+    elseif callback == 'unpause' then
+        playerData[playerName].game:togglePause()
     end
 end
