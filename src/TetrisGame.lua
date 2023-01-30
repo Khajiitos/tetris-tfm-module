@@ -126,7 +126,6 @@ function TetrisGame:endGame()
 
     playerData[self.playerName].game = nil
     tfm.exec.freezePlayer(self.playerName, false)
-    self.playerName = ''
 end
 
 function TetrisGame:checkCurrentPiece()
@@ -249,7 +248,6 @@ function TetrisGame:onKeyPress(keyCode)
             self.currentPiece:rotateBackwards()
             return
         end
-        self:printBoard()
     elseif keyCode == enum.key.RIGHT then
         self.currentPieceX = self.currentPieceX + 1
         if self:currentPieceTouchesAnything() then
