@@ -1,12 +1,13 @@
 PlayerData = {
     playerName = nil,
-    game = nil
+    game = nil,
+    openHelpTab = enum.helpTab.CLOSED
 }
 
 function PlayerData:new(playerName)
     local o = {}
     setmetatable(o, self)
-    o.__index = self
+    self.__index = self
     o.playerName = playerName
     return o
 end

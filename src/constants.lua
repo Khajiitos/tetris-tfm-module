@@ -19,6 +19,10 @@ enum = {
         PAUSE = 9,
         PAUSE_RESUME_BUTTON = 10,
         UNPAUSE_TIMER = 11,
+        HELP_CONTENT = 12,
+        HELP_CLOSE = 13,
+        HELP_TAB_DESCRIPTION = 14,
+        HELP_TAB_KEYS = 15,
 
         NEXT_PIECE_BLOCK_START = 50,
         CURRENT_PIECE_BLOCK_START = 100,
@@ -31,5 +35,10 @@ enum = {
         DOWN = 3,
         SPACE = 32,
         ESC = 27
+    },
+    helpTab = {
+        CLOSED = 0,
+        DESCRIPTION = 1,
+        KEYS = 2
     }
 }
