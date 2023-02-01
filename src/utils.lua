@@ -57,7 +57,7 @@ The game ends when the <VI>tetrominoes</VI> reach the top of the <T>playfield</T
 Here's a list of keys that the game uses:
 
 <V><b>A/Left</b></V> - Move the current tetromino to the left
-<V><b>D/Right</b></V> - Move the current tetromino to the Right
+<V><b>D/Right</b></V> - Move the current tetromino to the right
 <V><b>W/Up</b></V> - Rotate the current tetromino
 <V><b>S/Down</b></V> - Move the current tetromino down
 <V><b>Space</b></V> - Hard drop

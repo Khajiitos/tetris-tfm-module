@@ -63,6 +63,7 @@ function TetrisGame:startGame()
     self:updateGameInfoTextArea()
     self:updateNextPiecePreview()
     self:drawCurrentPiece()
+    self:updatePrediction()
 
     tfm.exec.freezePlayer(self.playerName, true, false)
 end
@@ -91,7 +92,6 @@ function TetrisGame:drawCurrentPiece()
             ui.addTextArea(id, '', self.playerName, startX + ((block - 1) * ACTUAL_BLOCK_SIZE), startY + (i * ACTUAL_BLOCK_SIZE), BLOCK_SIZE, BLOCK_SIZE, self.currentPiece.color, 0x010101, 1.0, true)
         end
     end
-    self:updatePrediction()
 end
 
 function TetrisGame:undrawCurrentPiece()
@@ -163,6 +163,7 @@ function TetrisGame:checkCurrentPiece()
     if self:currentPieceTouchesAnything() then
         self.currentPieceY = self.currentPieceY - 1
         self:installCurrentPiece()
+        self:updatePrediction()
     else
         self:drawCurrentPiece()
     end
@@ -241,6 +242,7 @@ function TetrisGame:installCurrentPiece()
     self:updateNextPiecePreview()
     self:drawCurrentPiece()
     self:playSound('tfmadv/bouton1.mp3')
+    self:updatePrediction()
 
     if self:currentPieceTouchesAnything() then
         self:endGame()
@@ -248,11 +250,17 @@ function TetrisGame:installCurrentPiece()
 end
 
 function TetrisGame:hardDrop()
+    local score = 0
+    self.currentPieceY = self.currentPieceY + 1
     while not self:currentPieceTouchesAnything() do
         self.currentPieceY = self.currentPieceY + 1
+        score = score + 2
     end
     self.currentPieceY = self.currentPieceY - 1
     self:installCurrentPiece()
+    if score ~= 0 then
+        self:addScore(score)
+    end
 end
 
 function TetrisGame:placeBlock(x, y, color)
@@ -314,12 +322,14 @@ function TetrisGame:onKeyPress(keyCode)
             self.currentPieceX = self.currentPieceX + 1
             return
         end
+        self:updatePrediction()
     elseif keyCode == enum.key.UP then 
         self.currentPiece:rotate()
         if self:currentPieceTouchesAnything() then
             self.currentPiece:rotateBackwards()
             return
         end
+        self:updatePrediction()
         self:playSound('transformice/son/dash.mp3')
     elseif keyCode == enum.key.RIGHT then
         self.currentPieceX = self.currentPieceX + 1
@@ -327,6 +337,7 @@ function TetrisGame:onKeyPress(keyCode)
             self.currentPieceX = self.currentPieceX - 1
             return
         end
+        self:updatePrediction()
     elseif keyCode == enum.key.DOWN then
         self.currentPieceY = self.currentPieceY + 1
     elseif keyCode == enum.key.SPACE then
