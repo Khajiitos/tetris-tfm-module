@@ -22,7 +22,8 @@ TetrisGame = {
     unpauseTimer = 3.0,
 
     currentPieceBlockTextAreasIds = {},
-    nextPieceBlockTextAreasIds = {}
+    nextPieceBlockTextAreasIds = {},
+    predictionBlockTextAreasIds = {}
 }
 
 function TetrisGame:new(playerName)
@@ -90,6 +91,7 @@ function TetrisGame:drawCurrentPiece()
             ui.addTextArea(id, '', self.playerName, startX + ((block - 1) * ACTUAL_BLOCK_SIZE), startY + (i * ACTUAL_BLOCK_SIZE), BLOCK_SIZE, BLOCK_SIZE, self.currentPiece.color, 0x010101, 1.0, true)
         end
     end
+    self:updatePrediction()
 end
 
 function TetrisGame:undrawCurrentPiece()
@@ -140,6 +142,10 @@ function TetrisGame:endGame()
     end
 
     for _, id in ipairs(self.nextPieceBlockTextAreasIds) do
+        ui.removeTextArea(id, self.playerName)
+    end
+
+    for _, id in ipairs(self.predictionBlockTextAreasIds) do
         ui.removeTextArea(id, self.playerName)
     end
 
@@ -325,6 +331,9 @@ function TetrisGame:onKeyPress(keyCode)
         self.currentPieceY = self.currentPieceY + 1
     elseif keyCode == enum.key.SPACE then
         self:hardDrop()
+    elseif keyCode == enum.key.P then
+        playerData[self.playerName].predictionEnabled = not playerData[self.playerName].predictionEnabled
+        self:updatePrediction()
     end
 
     self:undrawCurrentPiece()
@@ -376,4 +385,35 @@ end
 
 function TetrisGame:playSound(sound)
     tfm.exec.playSound(sound, nil, nil, nil, self.playerName)
+end
+
+function TetrisGame:updatePrediction()
+    for _, id in ipairs(self.predictionBlockTextAreasIds) do
+        ui.removeTextArea(id, self.playerName)
+    end
+    self.predictionBlockTextAreasIds = {}
+
+    if not playerData[self.playerName].predictionEnabled then
+        return
+    end
+
+    local originalY = self.currentPieceY
+    while not self:currentPieceTouchesAnything() do
+        self.currentPieceY = self.currentPieceY + 1
+    end
+    self.currentPieceY = self.currentPieceY - 1
+
+    local startX = self.bgxPosition + ((self.currentPieceX - 1) * ACTUAL_BLOCK_SIZE)
+    local startY = self.bgyPosition + ((self.currentPieceY - 2) * ACTUAL_BLOCK_SIZE)
+    local blocks = self.currentPiece:getBlocks()
+
+    for i, row in ipairs(blocks) do
+        for j, block in ipairs(row) do
+            local id = enum.textArea.PREDICTION_BLOCK_START + #self.predictionBlockTextAreasIds
+            self.predictionBlockTextAreasIds[#self.predictionBlockTextAreasIds + 1] = id
+            ui.addTextArea(id, '', self.playerName, startX + ((block - 1) * ACTUAL_BLOCK_SIZE), startY + (i * ACTUAL_BLOCK_SIZE), BLOCK_SIZE, BLOCK_SIZE, 0x808080, 0xA0A0A0, 0.1, true)
+        end
+    end
+
+    self.currentPieceY = originalY
 end

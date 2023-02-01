@@ -26,6 +26,7 @@ enum = {
 
         NEXT_PIECE_BLOCK_START = 50,
         CURRENT_PIECE_BLOCK_START = 100,
+        PREDICTION_BLOCK_START = 150,
         GAME_BLOCK_START = 200
     },
     key = {
@@ -34,7 +35,8 @@ enum = {
         RIGHT = 2,
         DOWN = 3,
         SPACE = 32,
-        ESC = 27
+        ESC = 27,
+        P = 80
     },
     helpTab = {
         CLOSED = 0,

@@ -22,4 +22,5 @@ function eventNewPlayer(playerName)
     tfm.exec.bindKeyboard(playerName, enum.key.DOWN, true, true)
     tfm.exec.bindKeyboard(playerName, enum.key.SPACE, true, true)
     tfm.exec.bindKeyboard(playerName, enum.key.ESC, true, true)
+    tfm.exec.bindKeyboard(playerName, enum.key.P, true, true)
 end

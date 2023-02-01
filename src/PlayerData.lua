@@ -1,7 +1,8 @@
 PlayerData = {
     playerName = nil,
     game = nil,
-    openHelpTab = enum.helpTab.CLOSED
+    openHelpTab = enum.helpTab.CLOSED,
+    predictionEnabled = true
 }
 
 function PlayerData:new(playerName)

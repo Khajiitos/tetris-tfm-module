@@ -62,6 +62,7 @@ Here's a list of keys that the game uses:
 <V><b>S/Down</b></V> - Move the current tetromino down
 <V><b>Space</b></V> - Hard drop
 <V><b>ESC</b></V> - Pauses the game
+<V><b>P</b></V> - Enables or disables prediction
 ]]
 }
 
