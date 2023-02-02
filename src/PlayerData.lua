@@ -2,7 +2,8 @@ PlayerData = {
     playerName = nil,
     game = nil,
     openHelpTab = enum.helpTab.CLOSED,
-    predictionEnabled = true
+    predictionEnabled = true,
+    keysLastUsed = {}
 }
 
 function PlayerData:new(playerName)
@@ -10,5 +11,6 @@ function PlayerData:new(playerName)
     setmetatable(o, self)
     self.__index = self
     o.playerName = playerName
+    o.keysLastUsed = {}
     return o
 end
