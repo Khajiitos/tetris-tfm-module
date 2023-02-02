@@ -2,9 +2,11 @@ TetrisGame = {
     playerName = nil,
     board = {},
     currentPiece = nil,
+    currentPieceRotationPhase = 1,
     nextPiece = nil,
     currentPieceX = 4,
     currentPieceY = 1,
+    lowestBlockY = 20,
 
     score = 0,
     lines = 0,
@@ -33,8 +35,8 @@ function TetrisGame:new(playerName)
     o.playerName = playerName
     o.currentPieceBlockTextAreasIds = {}
     o.nextPieceBlockTextAreasIds = {}
-    o.currentPiece = piece_prototypes[math.random(#piece_prototypes)]:copy()
-    o.nextPiece = piece_prototypes[math.random(#piece_prototypes)]:copy()
+    o.currentPiece = piece_prototypes[math.random(#piece_prototypes)]
+    o.nextPiece = piece_prototypes[math.random(#piece_prototypes)]
     o.board = {}
     return o
 end
@@ -83,7 +85,7 @@ function TetrisGame:drawCurrentPiece()
     local startX = self.bgxPosition + ((self.currentPieceX - 1) * ACTUAL_BLOCK_SIZE)
     local startY = self.bgyPosition + ((self.currentPieceY - 2) * ACTUAL_BLOCK_SIZE)
 
-    local blocks = self.currentPiece:getBlocks()
+    local blocks = self:getCurrentPieceBlocks()
 
     for i, row in ipairs(blocks) do
         for j, block in ipairs(row) do
@@ -106,7 +108,7 @@ function TetrisGame:updateNextPiecePreview()
         ui.removeTextArea(id, self.playerName)
     end
     self.nextPieceBlockTextAreasIds = {}
-    local blocks = self.nextPiece:getBlocks()
+    local blocks = self:getNextPieceBlocks()
     local pieceWidth, pieceHeight = 0, 0
 
     for i, row in ipairs(blocks) do
@@ -170,12 +172,12 @@ function TetrisGame:checkCurrentPiece()
 end
 
 function TetrisGame:currentPieceTouchesAnything()
-    local blocks = self.currentPiece:getBlocks()
+    local blocks = self:getCurrentPieceBlocks()
     for i, row in ipairs(blocks) do
         for j, block in ipairs(row) do
             local blockX = self.currentPieceX + block - 1
             local blockY = self.currentPieceY + i - 1
-            if blockY > GAME_HEIGHT or self:block(blockX, blockY) or blockX < 1 or blockX > GAME_WIDTH then
+            if blockY > GAME_HEIGHT or blockX < 1 or blockX > GAME_WIDTH or self:block(blockX, blockY) then
                 return true
             end
         end
@@ -214,7 +216,7 @@ end
 function TetrisGame:installCurrentPiece()
     self:undrawCurrentPiece()
     local currentLines = self.lines
-    local blocks = self.currentPiece:getBlocks()
+    local blocks = self:getCurrentPieceBlocks()
     for i, row in ipairs(blocks) do
         for j, block in ipairs(row) do
             local blockX = self.currentPieceX + block - 1
@@ -238,7 +240,8 @@ function TetrisGame:installCurrentPiece()
     self.currentPieceY = 1
     self.currentPieceX = 4
     self.currentPiece = self.nextPiece
-    self.nextPiece = piece_prototypes[math.random(#piece_prototypes)]:copy()
+    self.currentPieceRotationPhase = 1
+    self.nextPiece = piece_prototypes[math.random(#piece_prototypes)]
     self:updateNextPiecePreview()
     self:drawCurrentPiece()
     self:playSound('tfmadv/bouton1.mp3')
@@ -270,6 +273,9 @@ function TetrisGame:placeBlock(x, y, color)
     local boardIndex = self:boardIndex(x, y)
     self.board[boardIndex] = color
     if color then
+        if y < self.lowestBlockY then
+            self.lowestBlockY = y
+        end
         local textAreaX, textAreaY = self:position(x, y)
         ui.addTextArea(enum.textArea.GAME_BLOCK_START + boardIndex - 1, '', self.playerName, textAreaX, textAreaY, BLOCK_SIZE, BLOCK_SIZE, color, 0x010101, 1.0, true)
     else
@@ -308,6 +314,20 @@ function TetrisGame:position(x, y)
     return self.bgxPosition + (x - 1) * ACTUAL_BLOCK_SIZE, self.bgyPosition + (y - 1) * ACTUAL_BLOCK_SIZE
 end
 
+function TetrisGame:rotateCurrentPiece()
+    self.currentPieceRotationPhase = self.currentPieceRotationPhase + 1
+    if self.currentPieceRotationPhase > 4 then
+        self.currentPieceRotationPhase = 1
+    end
+end
+
+function TetrisGame:rotateCurrentPieceBackwards()
+    self.currentPieceRotationPhase = self.currentPieceRotationPhase - 1
+    if self.currentPieceRotationPhase < 1 then
+        self.currentPieceRotationPhase = 4
+    end
+end
+
 function TetrisGame:onKeyPress(keyCode)
     if keyCode == enum.key.ESC then
         self:togglePause()
@@ -324,9 +344,9 @@ function TetrisGame:onKeyPress(keyCode)
         end
         self:updatePrediction()
     elseif keyCode == enum.key.UP then 
-        self.currentPiece:rotate()
+        self:rotateCurrentPiece()
         if self:currentPieceTouchesAnything() then
-            self.currentPiece:rotateBackwards()
+            self:rotateCurrentPieceBackwards()
             return
         end
         self:updatePrediction()
@@ -398,6 +418,22 @@ function TetrisGame:playSound(sound)
     tfm.exec.playSound(sound, nil, nil, nil, self.playerName)
 end
 
+function TetrisGame:getCurrentPieceBlocks()
+    return self.currentPiece.pieceBlocks[self.currentPieceRotationPhase]
+end
+
+function TetrisGame:getNextPieceBlocks()
+    return self.nextPiece.pieceBlocks[1]
+end
+
+function TetrisGame:getCurrentPieceHeight()
+    if self.currentPieceRotationPhase % 2 == 1 then
+        return self.currentPiece.pieceHeight
+    else
+        return self.currentPiece.pieceWidth
+    end
+end
+
 function TetrisGame:updatePrediction()
     for _, id in ipairs(self.predictionBlockTextAreasIds) do
         ui.removeTextArea(id, self.playerName)
@@ -409,6 +445,7 @@ function TetrisGame:updatePrediction()
     end
 
     local originalY = self.currentPieceY
+    self.currentPieceY = math.max(originalY, self.lowestBlockY - self:getCurrentPieceHeight() - 1)
     while not self:currentPieceTouchesAnything() do
         self.currentPieceY = self.currentPieceY + 1
     end
@@ -416,7 +453,7 @@ function TetrisGame:updatePrediction()
 
     local startX = self.bgxPosition + ((self.currentPieceX - 1) * ACTUAL_BLOCK_SIZE)
     local startY = self.bgyPosition + ((self.currentPieceY - 2) * ACTUAL_BLOCK_SIZE)
-    local blocks = self.currentPiece:getBlocks()
+    local blocks = self:getCurrentPieceBlocks()
 
     for i, row in ipairs(blocks) do
         for j, block in ipairs(row) do

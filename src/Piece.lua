@@ -1,7 +1,8 @@
 Piece = {
     color = 0xFF0000,
-    rotationPhase = 1,
-    pieceBlocks = {}
+    pieceBlocks = {},
+    pieceWidth = 0,
+    pieceHeight = 0
 }
 
 function Piece:new(color, pieceBlocks)
@@ -10,27 +11,18 @@ function Piece:new(color, pieceBlocks)
     self.__index = self
     o.color = color
     o.pieceBlocks = pieceBlocks
+
+    for i, row in ipairs(o:getBlocks(1)) do
+        for j, block in ipairs(row) do
+            o.pieceWidth = math.max(o.pieceWidth, block)
+        end
+        if #row ~= 0 then
+            o.pieceHeight = o.pieceHeight + 1
+        end 
+    end
     return o
 end
 
-function Piece:rotate()
-    self.rotationPhase = self.rotationPhase + 1
-    if self.rotationPhase >= 5 then
-        self.rotationPhase = 1
-    end
-end
-
-function Piece:rotateBackwards()
-    self.rotationPhase = self.rotationPhase - 1
-    if self.rotationPhase <= 0 then
-        self.rotationPhase = 4
-    end
-end
-
-function Piece:copy()
-    return Piece:new(self.color, table.copy(self.pieceBlocks, true))
-end
-
-function Piece:getBlocks()
-    return self.pieceBlocks[self.rotationPhase]
+function Piece:getBlocks(rotationPhase)
+    return self.pieceBlocks[rotationPhase]
 end
