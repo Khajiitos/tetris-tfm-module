@@ -49,4 +49,6 @@ keyCooldowns = {
     [enum.key.UP] = 200,
     [enum.key.RIGHT] = 100,
     [enum.key.LEFT] = 100,
+    [enum.key.DOWN] = 100,
+    [enum.key.P] = 300,
 }
