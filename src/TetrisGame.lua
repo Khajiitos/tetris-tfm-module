@@ -165,7 +165,6 @@ function TetrisGame:checkCurrentPiece()
     if self:currentPieceTouchesAnything() then
         self.currentPieceY = self.currentPieceY - 1
         self:installCurrentPiece()
-        self:updatePrediction()
     else
         self:drawCurrentPiece()
     end
