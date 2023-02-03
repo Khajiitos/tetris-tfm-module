@@ -18,5 +18,8 @@ function eventTextAreaCallback(textAreaID, playerName, callback)
         changeHelpTab(playerName, enum.helpTab.DESCRIPTION)
     elseif callback == "helpTabKeys" then 
         changeHelpTab(playerName, enum.helpTab.KEYS)
+    elseif callback == "closeGameOver" then
+        ui.removeTextArea(enum.textArea.GAME_OVER, playerName)
+        ui.removeTextArea(enum.textArea.GAME_OVER_CLOSE, playerName)
     end
 end

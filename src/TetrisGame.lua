@@ -11,6 +11,8 @@ TetrisGame = {
 
     score = 0,
     lines = 0,
+    piecesPlaced = 0,
+    hardDrops = 0,
 
     npTextAreaWidth = 0,
     npTextAreaHeight = 0,
@@ -52,6 +54,8 @@ function TetrisGame:new(playerName)
 end
 
 function TetrisGame:startGame()
+    ui.removeTextArea(enum.textArea.GAME_OVER, playerName)
+    ui.removeTextArea(enum.textArea.GAME_OVER_CLOSE, playerName)
     self.bgTextAreaWidth = ACTUAL_BLOCK_SIZE * GAME_WIDTH
     self.bgTextAreaHeight = ACTUAL_BLOCK_SIZE * GAME_HEIGHT
 
@@ -142,6 +146,20 @@ function TetrisGame:updateNextPiecePreview()
     end
 end
 
+function TetrisGame:showGameOver()
+    local textAreaText = string.format([[<textformat leftmargin="10" rightmargin="10" leading="-4">
+<p align="center"><font size="24" color="#FFFFFF"><b>Game over!</b></font></p>
+
+
+<p align="center"><font size="16" color="#FFFFFF"><b>Score:</b> <N>%d</N></font></p>
+<p align="center"><font size="16" color="#FFFFFF"><b>Lines cleared:</b> <N>%d</N></font></p>
+<p align="center"><font size="16" color="#FFFFFF"><b>Tetrominoes placed:</b> <N>%d</N></font></p>
+<p align="center"><font size="16" color="#FFFFFF"><b>Hard drops:</b> <N>%d</N></font></p>
+</textformat>]], self.score, self.lines, self.piecesPlaced, self.hardDrops)
+    ui.addTextArea(enum.textArea.GAME_OVER, textAreaText, self.playerName, 250, 50, 300, 300, 0x101010, 0x010101, 1.0, true)
+    ui.addTextArea(enum.textArea.GAME_OVER_CLOSE, '<a href="event:closeGameOver"><p align="center"><font size="19" color="#FFFFFF">Close</font></p></a>', self.playerName, 350, 310, 100, 25, 0x202020, 0x010101, 1.0, true)
+end
+
 function TetrisGame:endGame()
     addStartGameButton(self.playerName)
     ui.removeTextArea(enum.textArea.GAME_BACKGROUND, self.playerName)
@@ -166,6 +184,7 @@ function TetrisGame:endGame()
     end
 
     self:playSound('deadmaze/combat/soins.mp3')
+    self:showGameOver()
 
     playerData[self.playerName].game = nil
     tfm.exec.freezePlayer(self.playerName, false)
@@ -246,6 +265,7 @@ function TetrisGame:installCurrentPiece()
         self:addScore(800)
     end
 
+    self.piecesPlaced = self.piecesPlaced + 1
     self.currentPieceY = 1
     self.currentPieceX = 4
     self.currentPiece = self.nextPiece
@@ -262,6 +282,7 @@ function TetrisGame:installCurrentPiece()
 end
 
 function TetrisGame:hardDrop()
+    self.hardDrops = self.hardDrops + 1
     local score = 0
     self.currentPieceY = self.currentPieceY + 1
     while not self:currentPieceTouchesAnything() do
