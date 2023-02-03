@@ -445,7 +445,7 @@ function TetrisGame:updatePrediction()
     end
 
     local originalY = self.currentPieceY
-    self.currentPieceY = math.max(originalY, self.lowestBlockY - self:getCurrentPieceHeight() - 1)
+    self.currentPieceY = math.max(originalY, self.lowestBlockY - self:getCurrentPieceHeight() + 1)
     while not self:currentPieceTouchesAnything() do
         self.currentPieceY = self.currentPieceY + 1
     end
