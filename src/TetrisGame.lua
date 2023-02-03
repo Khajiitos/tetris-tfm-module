@@ -6,7 +6,7 @@ TetrisGame = {
     nextPiece = nil,
     currentPieceX = 4,
     currentPieceY = 1,
-    lowestBlockY = 20,
+    lowestBlockY = GAME_HEIGHT,
 
     score = 0,
     lines = 0,

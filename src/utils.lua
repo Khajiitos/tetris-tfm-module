@@ -24,7 +24,7 @@ function doLater(callback, ticksLater, forgetAfterNewRound)
 end
 
 function addStartGameButton(playerName)
-    ui.addTextArea(enum.textArea.START_GAME, '<a href="event:startGame"><p align="center"><b>Start game</b></p></a>', playerName, 350, 370, 100, 20, nil, nil, 0.9, true)
+    ui.addTextArea(enum.textArea.START_GAME, '<a href="event:startGame"><p align="center"><font size="17" color="#222222"><b>Start game</b></p></a>', playerName, 340, 365, 120, 25, 0x888888, 0x666666, 0.9, true)
 end
 
 function removeStartGameButton(playerName)
