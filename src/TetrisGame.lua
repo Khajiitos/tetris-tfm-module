@@ -7,6 +7,7 @@ TetrisGame = {
     currentPieceX = 4,
     currentPieceY = 1,
     lowestBlockY = GAME_HEIGHT,
+    tetrominoBag = {},
 
     score = 0,
     lines = 0,
@@ -28,6 +29,15 @@ TetrisGame = {
     predictionBlockTextAreasIds = {}
 }
 
+function TetrisGame:pickTetrominoFromBag()
+    if #self.tetrominoBag == 0 then
+        for i = 1, #piece_prototypes do
+            self.tetrominoBag[i] = piece_prototypes[i]
+        end
+    end
+    return table.remove(self.tetrominoBag, math.random(1, #self.tetrominoBag))
+end
+
 function TetrisGame:new(playerName)
     local o = {}
     setmetatable(o, self)
@@ -35,8 +45,8 @@ function TetrisGame:new(playerName)
     o.playerName = playerName
     o.currentPieceBlockTextAreasIds = {}
     o.nextPieceBlockTextAreasIds = {}
-    o.currentPiece = piece_prototypes[math.random(#piece_prototypes)]
-    o.nextPiece = piece_prototypes[math.random(#piece_prototypes)]
+    o.currentPiece = self:pickTetrominoFromBag()
+    o.nextPiece = self:pickTetrominoFromBag()
     o.board = {}
     return o
 end
@@ -240,7 +250,7 @@ function TetrisGame:installCurrentPiece()
     self.currentPieceX = 4
     self.currentPiece = self.nextPiece
     self.currentPieceRotationPhase = 1
-    self.nextPiece = piece_prototypes[math.random(#piece_prototypes)]
+    self.nextPiece = self:pickTetrominoFromBag()
     self:updateNextPiecePreview()
     self:drawCurrentPiece()
     self:playSound('tfmadv/bouton1.mp3')
@@ -444,7 +454,7 @@ function TetrisGame:updatePrediction()
     end
 
     local originalY = self.currentPieceY
-    self.currentPieceY = math.max(originalY, self.lowestBlockY - self:getCurrentPieceHeight() + 1)
+    self.currentPieceY = math.max(originalY, self.lowestBlockY - self:getCurrentPieceHeight())
     while not self:currentPieceTouchesAnything() do
         self.currentPieceY = self.currentPieceY + 1
     end
