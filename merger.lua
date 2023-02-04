@@ -16,6 +16,7 @@ files = {
     'events/eventChatCommand.lua',
     'events/eventKeyboard.lua',
     'events/eventNewPlayer.lua',
+    'events/eventNewGame.lua',
     'events/eventPlayerLeft.lua',
     'events/eventPlayerDied.lua',
     'events/eventTextAreaCallback.lua',
