@@ -23,4 +23,7 @@ function eventNewPlayer(playerName)
     tfm.exec.bindKeyboard(playerName, enum.key.SPACE, true, true)
     tfm.exec.bindKeyboard(playerName, enum.key.ESC, true, true)
     tfm.exec.bindKeyboard(playerName, enum.key.P, true, true)
+
+    ui.setMapName(MAP_NAME);
+    ui.setBackgroundColor('#FFFFFF')
 end
