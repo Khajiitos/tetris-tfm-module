@@ -45,8 +45,10 @@ function TetrisGame:new(playerName)
     setmetatable(o, self)
     self.__index = self
     o.playerName = playerName
+    o.tetrominoBag = {}
     o.currentPieceBlockTextAreasIds = {}
     o.nextPieceBlockTextAreasIds = {}
+    o.predictionBlockTextAreasIds = {}
     o.currentPiece = self:pickTetrominoFromBag()
     o.nextPiece = self:pickTetrominoFromBag()
     o.board = {}
@@ -54,6 +56,9 @@ function TetrisGame:new(playerName)
 end
 
 function TetrisGame:startGame()
+    if playerData[self.playerName].openHelpTab ~= enum.helpTab.CLOSED then
+        changeHelpTab(self.playerName, enum.helpTab.CLOSED)
+    end
     ui.removeTextArea(enum.textArea.GAME_OVER, playerName)
     ui.removeTextArea(enum.textArea.GAME_OVER_CLOSE, playerName)
     self.bgTextAreaWidth = ACTUAL_BLOCK_SIZE * GAME_WIDTH
@@ -82,6 +87,7 @@ function TetrisGame:startGame()
     self:updatePrediction()
 
     tfm.exec.freezePlayer(self.playerName, true, false)
+    tfm.exec.setNameColor(self.playerName, math.random(0, 0xFFFFFF))
 end
 
 function TetrisGame:updateGameInfoTextArea()
@@ -96,6 +102,7 @@ function TetrisGame:updateGameInfoTextArea()
 end
 
 function TetrisGame:drawCurrentPiece()
+    local textAreas = self.currentPieceBlockTextAreasIds
     local startX = self.bgxPosition + ((self.currentPieceX - 1) * ACTUAL_BLOCK_SIZE)
     local startY = self.bgyPosition + ((self.currentPieceY - 2) * ACTUAL_BLOCK_SIZE)
 
@@ -103,25 +110,27 @@ function TetrisGame:drawCurrentPiece()
 
     for i, row in ipairs(blocks) do
         for j, block in ipairs(row) do
-            local id = enum.textArea.CURRENT_PIECE_BLOCK_START + #self.currentPieceBlockTextAreasIds
-            self.currentPieceBlockTextAreasIds[#self.currentPieceBlockTextAreasIds + 1] = id
+            local id = enum.textArea.CURRENT_PIECE_BLOCK_START + #textAreas
+            textAreas[#textAreas + 1] = id
             ui.addTextArea(id, '', self.playerName, startX + ((block - 1) * ACTUAL_BLOCK_SIZE), startY + (i * ACTUAL_BLOCK_SIZE), BLOCK_SIZE, BLOCK_SIZE, self.currentPiece.color, 0x010101, 1.0, true)
         end
     end
 end
 
 function TetrisGame:undrawCurrentPiece()
-    for _, id in ipairs(self.currentPieceBlockTextAreasIds) do
+    local textAreas = self.currentPieceBlockTextAreasIds
+    for index, id in ipairs(textAreas) do
         ui.removeTextArea(id, self.playerName)
+        textAreas[index] = nil
     end
-    self.currentPieceBlockTextAreasIds = {}
 end
 
 function TetrisGame:updateNextPiecePreview()
-    for i, id in ipairs(self.nextPieceBlockTextAreasIds) do
+    local textAreas = self.nextPieceBlockTextAreasIds
+    for index, id in ipairs(textAreas) do
         ui.removeTextArea(id, self.playerName)
+        textAreas[index] = nil
     end
-    self.nextPieceBlockTextAreasIds = {}
     local blocks = self:getNextPieceBlocks()
     local pieceWidth, pieceHeight = 0, 0
 
@@ -139,8 +148,8 @@ function TetrisGame:updateNextPiecePreview()
 
     for i, row in ipairs(blocks) do
         for j, block in ipairs(row) do
-            local id = enum.textArea.NEXT_PIECE_BLOCK_START + #(self.nextPieceBlockTextAreasIds)
-            self.nextPieceBlockTextAreasIds[#self.nextPieceBlockTextAreasIds + 1] = id
+            local id = enum.textArea.NEXT_PIECE_BLOCK_START + #textAreas
+            textAreas[#textAreas + 1] = id
             ui.addTextArea(id, '', self.playerName, startX + ((block - 1) * ACTUAL_BLOCK_SIZE), startY + (i * ACTUAL_BLOCK_SIZE), BLOCK_SIZE, BLOCK_SIZE, self.nextPiece.color, 0x010101, 1.0, true)
         end
     end
@@ -186,8 +195,9 @@ function TetrisGame:endGame()
     self:playSound('deadmaze/combat/soins.mp3')
     self:showGameOver()
 
-    playerData[self.playerName].game = nil
     tfm.exec.freezePlayer(self.playerName, false)
+    tfm.exec.setNameColor(self.playerName, 0xFFFFFF)
+    playerData[self.playerName].game = nil
 end
 
 function TetrisGame:checkCurrentPiece()
@@ -282,7 +292,6 @@ function TetrisGame:installCurrentPiece()
 end
 
 function TetrisGame:hardDrop()
-    self.hardDrops = self.hardDrops + 1
     local score = 0
     self.currentPieceY = self.currentPieceY + 1
     while not self:currentPieceTouchesAnything() do
@@ -292,6 +301,7 @@ function TetrisGame:hardDrop()
     self.currentPieceY = self.currentPieceY - 1
     self:installCurrentPiece()
     if score ~= 0 then
+        self.hardDrops = self.hardDrops + 1
         self:addScore(score)
     end
 end
@@ -396,7 +406,6 @@ function TetrisGame:onKeyPress(keyCode)
         playerData[self.playerName].predictionEnabled = not playerData[self.playerName].predictionEnabled
         self:updatePrediction()
     end
-
     self:undrawCurrentPiece()
     self:checkCurrentPiece()
 end
@@ -407,20 +416,6 @@ end
 
 function TetrisGame:updateUnpauseTimer()
     ui.updateTextArea(enum.textArea.UNPAUSE_TIMER, string.format('<p align="center"><font size="50" color="#FFFFFF" face="serif"><b>%d</b></font></p>', math.ceil(self.unpauseTimer)), self.playerName)
-end
-
-function TetrisGame:printBoard()
-    for i = 1, GAME_HEIGHT do
-        local rowStr = ''
-        for j = 1, GAME_WIDTH do
-            if self.board[j + ((i - 1) * GAME_WIDTH)] then
-                rowStr = rowStr .. 'X '
-            else
-                rowStr = rowStr .. '  '
-            end
-        end
-        print(rowStr)
-    end
 end
 
 function TetrisGame:togglePause()
@@ -465,10 +460,11 @@ function TetrisGame:getCurrentPieceHeight()
 end
 
 function TetrisGame:updatePrediction()
-    for _, id in ipairs(self.predictionBlockTextAreasIds) do
+    local textAreas = self.predictionBlockTextAreasIds
+    for index, id in ipairs(textAreas) do
         ui.removeTextArea(id, self.playerName)
+        textAreas[index] = nil
     end
-    self.predictionBlockTextAreasIds = {}
 
     if not playerData[self.playerName].predictionEnabled then
         return
@@ -487,8 +483,8 @@ function TetrisGame:updatePrediction()
 
     for i, row in ipairs(blocks) do
         for j, block in ipairs(row) do
-            local id = enum.textArea.PREDICTION_BLOCK_START + #self.predictionBlockTextAreasIds
-            self.predictionBlockTextAreasIds[#self.predictionBlockTextAreasIds + 1] = id
+            local id = enum.textArea.PREDICTION_BLOCK_START + #textAreas
+            textAreas[#textAreas + 1] = id
             ui.addTextArea(id, '', self.playerName, startX + ((block - 1) * ACTUAL_BLOCK_SIZE), startY + (i * ACTUAL_BLOCK_SIZE), BLOCK_SIZE, BLOCK_SIZE, 0x808080, 0xA0A0A0, 0.1, true)
         end
     end

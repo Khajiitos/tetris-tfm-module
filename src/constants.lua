@@ -1,4 +1,5 @@
 MAP = 7925976
+BACKGROUND_COLOR = '#FFFFFF'
 
 MAP_NAME = '<PT><b>Tetris TFM</b></PT> <BL>by</BL> <V>Khajiitos</V><G>#0000</G>'
 

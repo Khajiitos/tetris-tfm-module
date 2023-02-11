@@ -1,5 +1,6 @@
 function eventTextAreaCallback(textAreaID, playerName, callback)
     if callback == 'helpQuestionMark' then
+        if playerData[playerName].game then return end
         if playerData[playerName].openHelpTab == enum.helpTab.CLOSED then
             createHelpPage(playerName)
         else

@@ -8,14 +8,15 @@ local tetrisLogoText = string.format('<textformat leading="-40"><p align="center
 '<font size="64" color="#303030" face="serif" letterspacing="2">TFM</font>'
 )
 function eventNewPlayer(playerName)
-    ui.addTextArea(enum.textArea.TETRIS_LOGO, tetrisLogoText, playerName, 0, 0, 800, 400, 0, 0, 0, true)
-
     playerData[playerName] = PlayerData:new(playerName)
 
+    ui.addTextArea(enum.textArea.TETRIS_LOGO, tetrisLogoText, playerName, 0, 0, 800, 400, 0, 0, 0, true)
 	ui.addTextArea(enum.textArea.HELP, "<a href='event:helpQuestionMark'><p align='center'><font size='16'><b>?</b></font></p></a>", playerName, 760, 35, 25, 25, 0x111111, 0x111111, 1.0, true)
-    tfm.exec.respawnPlayer(playerName)
     addStartGameButton(playerName)
-
+    
+    tfm.exec.setNameColor(playerName, 0xFFFFFF)
+    tfm.exec.respawnPlayer(playerName)
+    
     tfm.exec.bindKeyboard(playerName, enum.key.LEFT, true, true)
     tfm.exec.bindKeyboard(playerName, enum.key.UP, true, true)
     tfm.exec.bindKeyboard(playerName, enum.key.RIGHT, true, true)
@@ -23,7 +24,7 @@ function eventNewPlayer(playerName)
     tfm.exec.bindKeyboard(playerName, enum.key.SPACE, true, true)
     tfm.exec.bindKeyboard(playerName, enum.key.ESC, true, true)
     tfm.exec.bindKeyboard(playerName, enum.key.P, true, true)
-
+    
     ui.setMapName(MAP_NAME);
-    ui.setBackgroundColor('#FFFFFF')
+    ui.setBackgroundColor(BACKGROUND_COLOR)
 end
